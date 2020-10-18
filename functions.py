@@ -2,13 +2,16 @@ import cv2 as cv
 import matplotlib.pyplot as plt 
 import numpy as np
 
-test_files = ['dice2.jpg']
+test_files = ['images/redscale.png']
+
 edge_kernel = np.array([[-1, -1, -1],[-1, 8, -1],[-1, -1, -1]])
+# red_kernel = np.array([2,-1,-1])
+# green_kernel = np.array([-1,2,-1])
+# blue_kernel = np.array([-1,-1,2]) #RGB bad idea aye lmao
 
-red_kernel = np.array([2,-1,-1])
-green_kernel = np.array([-1,2,-1])
-blue_kernel = np.array([-1,-1,2]) #RGB
-
+red_kernel = np.array([1,0,0])
+green_kernel = np.array([0,1,0])
+blue_kernel = np.array([0,0,1])
 rgb_kernels = [red_kernel,green_kernel,blue_kernel]
 
 
@@ -45,19 +48,32 @@ def import_images(paths):
     return imgs
 
 def edge_recognition(images, kenel, padding=False):
+    """
+    Get a conv matrix using edge detection kernels
+    """
     return
 
 
 def get_histogram(image):
+    """
+    Extract the histograms related to the input image
+    input:
+        image: image in default BGR format
+    output:
+
+    """
     channels = image.shape[2]
     hists = list()
 
     bins = [256]
     rng = [0,256]
+    # Convert image and get histograms
     rgb_img = cv.cvtColor(image, cv.COLOR_BGR2RGB)
     r_hist = cv.calcHist([rgb_img], [0], None, bins, rng, accumulate=False)
     g_hist = cv.calcHist([rgb_img], [1], None, bins, rng, accumulate=False)
     b_hist = cv.calcHist([rgb_img], [2], None, bins, rng, accumulate=False)
+
+    # Plot histograms
     hstFig,hstAxs=plt.subplots(1,1)
     hstFig.suptitle("Histograms")
     # hstAxs[0].plot(r_hist, color='r')
@@ -66,20 +82,25 @@ def get_histogram(image):
     hstAxs.plot(r_hist, color='r')
     hstAxs.plot(g_hist, color='g')
     hstAxs.plot(b_hist, color='b')
-    #plt.show()
-
-    #chan1 = image.
-
 
     return
 
 def color_pop(image, threshold):
+    """
+    Takes a signle image as input and shows a grayscale of each channel
+    input:
+        image: BGR image
+        threshold: unused
+    output:
+
+    """
     rgb_img = cv.cvtColor(image, cv.COLOR_BGR2RGB)
     image_shape = rgb_img.shape
     channels = image_shape[2]
     
     pop_images = list()
 
+    # Check image dimensions
     if channels != 1:
         for kernel in rgb_kernels:
             pop_img = np.zeros((300,400,1), np.uint8)
@@ -90,26 +111,31 @@ def color_pop(image, threshold):
                     res = conv.sum()
                     pop_img[i][j] = res
             pop_images.append(pop_img)
-            break
+            #break
+
         # Normalize (to 255)
         for img in pop_images:
-            #coef = (255/img.max())
-            coef = (1/img.max())
+            coef = (255/img.max())
             for i in range(image_shape[0]):
                 for j in range(image_shape[1]):
-                    img[i][j] = round((img[i][j]*coef)[0])
-                    
-            break
-
-    popFig,popAxs=plt.subplots(1,2)
-    popFig.suptitle("Pop Image")
+                    img[i][j] = round((img[i][j]*coef)[0])    
+            #break
+    else:
+        pass
     
-    popAxs[0].imshow(pop_img, cmap='gray')
-    popAxs[1].imshow(pop_img, cmap='Reds')
-    #plt.show()  
-
+    # Display grayscales for each channel
+    cmaps = ['Reds', 'Greens', 'Blues']
+    if channels != 1:
+        for m in range(len(cmaps)):
+            popFig,popAxs=plt.subplots(1,2)
+            popFig.suptitle("Grayscale " + cmaps[m] + " channel")
+            
+            popAxs[0].imshow(pop_images[m], cmap='gray')
+            popAxs[1].imshow(pop_images[m], cmap=cmaps[m])
+    else:
+        pass
+    
     return
-
 
 if __name__ == "__main__":
     main()
